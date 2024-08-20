@@ -1,0 +1,14 @@
+(env
+  (_ (flags (:standard -warn-error -a -w -26-49-27-K))))
+
+
+(library
+  (name iITRAN)
+  (modules iit_ast iit_tokens iit_lexer iit_parser iit_print iit_typecheck iITRAN)
+  (libraries varmap)
+)
+(executable
+  (public_name iit)
+  (name iit_main)
+  (modules iit_main iit_interp)
+  (libraries unix varmap iITRAN))
