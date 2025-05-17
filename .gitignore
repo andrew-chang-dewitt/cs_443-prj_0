@@ -29,3 +29,7 @@ setup.log
 _opam/
 iit
 *.opam
+
+# vim files
+*.swp
+*.swo
