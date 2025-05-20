@@ -9,6 +9,7 @@ exception RuntimeError of loc * string
 exception Unimplemented
    
 module Env = Varmap
+module Pprint = IITRAN.Print
 
 type value = int
 type env = (value * typ) Env.t
@@ -43,13 +44,17 @@ let do_unop u v =
   | UChar -> (v, TCharacter)
   | ULog -> (to_log v, TLogical)
   | UInt -> (v, TInteger)
-         
-let rec interp_exp (env: env) (e: 'a exp) : int * typ * env =
-  match e.edesc with
-  | EAssign ({edesc = EVar var; _}, e) -> raise Unimplemented
+
+let rec interp_exp (env: env) (exp: 'a exp) : int * typ * env =
+  match exp.edesc with
+  | EAssign ({edesc = EVar var; _}, rhs) ->
+      let (value, typ, env') = (interp_exp env rhs) in
+      value, typ, (Env.add var (value, typ) env')
   | EAssign (_, _) ->
-     raise (RuntimeError (e.eloc, "Left side of assignment not a variable"))
-  | _ -> raise Unimplemented
+      raise (RuntimeError (exp.eloc, "Left side of assignment not a variable"))
+  | EConst (CInt c) -> c, TInteger, env
+  | _ -> raise (RuntimeError (exp.eloc, "Expression not implemented"))
+
 
 exception Stop of env
 
