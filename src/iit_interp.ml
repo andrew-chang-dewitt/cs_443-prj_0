@@ -52,7 +52,9 @@ let rec interp_exp (env: env) (exp: 'a exp) : int * typ * env =
       (value, typ, (Env.add var (value, typ) env'))
   | EAssign (_, _) ->
       raise (RuntimeError (exp.eloc, "Left side of assignment not a variable"))
-  | EConst (CInt c) -> c, TInteger, env
+  | EConst c ->
+      let (value, typ) = val_of_const c in
+      (value, typ, env)
   | EBinop (op, lhs, rhs) ->
       let (lval, ltyp, lenv) = interp_exp env lhs in
       let (rval, rtyp, env') = interp_exp lenv rhs in
