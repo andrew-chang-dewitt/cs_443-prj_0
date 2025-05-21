@@ -58,6 +58,10 @@ let rec interp_exp (env: env) (exp: 'a exp) : int * typ * env =
       let (rval, rtyp, env') = interp_exp lenv rhs in
       let (res, typ) = do_bop op lval rval in
       (res, typ, env')
+  | EUnop (op, exp) ->
+      let (value, typ, env') = interp_exp env exp in
+      let (res, typ') = do_unop op value in
+      (res, typ', env')
   | EVar (var) ->
       (match (Env.find_opt var env) with
        | Some(value, typ) -> (value, typ, env)
