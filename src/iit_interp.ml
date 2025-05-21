@@ -7,7 +7,7 @@ open IITRAN.Ast
 exception RuntimeError of loc * string
 
 exception Unimplemented
-   
+
 module Env = Varmap
 module Pprint = IITRAN.Print
 
@@ -49,10 +49,19 @@ let rec interp_exp (env: env) (exp: 'a exp) : int * typ * env =
   match exp.edesc with
   | EAssign ({edesc = EVar var; _}, rhs) ->
       let (value, typ, env') = (interp_exp env rhs) in
-      value, typ, (Env.add var (value, typ) env')
+      (value, typ, (Env.add var (value, typ) env'))
   | EAssign (_, _) ->
       raise (RuntimeError (exp.eloc, "Left side of assignment not a variable"))
   | EConst (CInt c) -> c, TInteger, env
+  | EBinop (op, lhs, rhs) ->
+      let (lval, ltyp, lenv) = interp_exp env lhs in
+      let (rval, rtyp, env') = interp_exp lenv rhs in
+      let (res, typ) = do_bop op lval rval in
+      (res, typ, env')
+  | EVar (var) ->
+      (match (Env.find_opt var env) with
+       | Some(value, typ) -> (value, typ, env)
+       | None -> raise (RuntimeError (exp.eloc, (Printf.sprintf "Unbound variable: %s" var))))
   | _ -> raise (RuntimeError (exp.eloc, "Expression not implemented"))
 
 
